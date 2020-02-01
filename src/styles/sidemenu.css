@@ -1,0 +1,19 @@
+.sidemenu-container{
+    height: 100%;
+}
+.single-side-item{
+    background-color: #f1f1f1;
+    cursor: pointer;
+}
+.single-side-item:hover{
+    background-color: #fff;
+}
+.submenu-single-item{
+    margin-left: 10px;
+}
+.submenu-single-item:hover{
+    background-color: pink;
+}
+.submenu-single-item::before{
+    content: " - ";
+}
