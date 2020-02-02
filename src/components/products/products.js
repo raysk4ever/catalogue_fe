@@ -25,6 +25,7 @@ const Product = (props) => {
                 <Modal.Body>
                     <div className="product-details-container" onClick={showProductDetails}>
                         <div className="product-basic">
+                            <span className="b mb-5">{currentproduct.breadcrumb}</span>
                             <div><span className="b mb-2">Product Name </span><span>{currentproduct.name}</span></div>
                             <div><span className="b mb-2">Category </span><span>{currentproduct.parentCategory.name}</span></div>
                             <div><span className="b mb-2">Sub Category</span><span>{currentproduct.subCategory}</span></div>
