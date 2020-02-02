@@ -2,7 +2,13 @@ exports.brandtypes = {
     ADD_NEW_BRAND: "ADD_NEW_BRAND",
     GET_ALL_BRANDS: "GET_ALL_BRANDS"
 }
+
 exports.categoryTypes = {
     ADD_NEW_CATEGORY: "ADD_NEW_CATEGORY",
     GET_ALL_CATEGORIES: "GET_ALL_CATEGORIES"
+}
+
+exports.productTypes = {
+    ADD_NEW_PRODUCT: "ADD_NEW_PRODUCT",
+    GET_ALL_PRODUCTS: "GET_ALL_PRODUCTS"
 }

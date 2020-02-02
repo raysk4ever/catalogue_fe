@@ -3,19 +3,28 @@
   display: flex;
   min-height: 100vh;
   flex-direction: column;
-  background-color: firebrick;
+  background-color: #f3f3f3;
 }
 .p-10{
   padding: 10px;
+}
+.df:{
+  display: flex;
+}
+.b{
+  font-weight: bold;
 }
 .nav-container{
   background-color: #fff;
 }
 .body-container{
   flex: 1;
-  background-color: forestgreen;
   display: flex;
-  flex-direction: row;
+}
+.body-content-container{
+  flex: 1;
+  display: flex;
+  background-color: cadetblue;
 }
 
 .side-bar-container{

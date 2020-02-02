@@ -9,9 +9,6 @@ const Nav = props => {
             <div>
                 <p>{brandName}</p>
             </div>
-            <div className="">
-                <button className="btn btn-primary">Add Product</button>
-            </div>
         </div>
      );
 }

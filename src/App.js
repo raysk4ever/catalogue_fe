@@ -4,8 +4,10 @@ import Sidemenu from "./components/sidemenu/sidemenu";
 import './App.css';
 import BrandAction from './actions/brandAction';
 import CategoryAction from './actions/categoryAction';
+import ProductAction from './actions/productAction';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import Products from './components/products/products';
 
 class App extends React.Component {
   
@@ -15,51 +17,105 @@ class App extends React.Component {
       showAddProduct: false,
       showAddCategory: false,
       showAddBrand: false,
+      showProductDetails: false,
       brands: ['Bosh', 'Nike', 'Jbl', 'Xiaomi'],
       categories: ['Cat 1', 'Cat 2', 'Cat 3', 'Cat 4'],
       showSettingSubmenu: false,
       showCategoriesSubmenu: false,
+      showBrandsubmenu: false,
       brandName: "",
       categoryName: "",
-      product: {}
+      product: {
+        breadcrumb: "",
+        specifications: [{ name: "", value:""}]
+      },
+      currentSelectedProduct: {},
+      queryStr: "?"
     }
   }
 
   componentDidMount() {
     this.props.getAllBrandsAction();
     this.props.getAllCategoriesAction();
+    this.props.getAllProductAction();
   }
 
   toggleAddProduct = () => this.setState({showAddProduct: !this.state.showAddProduct});
   toggleAddCategory = () => this.setState({showAddCategory: !this.state.showAddCategory});
   toggleAddBrand = () => this.setState({showAddBrand: !this.state.showAddBrand});
+  toggleShowProduct = (e, product) => this.setState({showProductDetails: !this.state.showProductDetails, currentSelectedProduct: product});
+
   toggleSubmenu = (e) => {
     e.stopPropagation();
     const value = e.currentTarget.getAttribute("name");
     if(value=='Settings') this.setState({showSettingSubmenu: !this.state.showSettingSubmenu});
     if(value=='Categories') this.setState({showCategoriesSubmenu: !this.state.showCategoriesSubmenu});
+    if(value=='Brands') this.setState({showBrandsubmenu: !this.state.showBrandsubmenu});
   }
 
-  handleOnChange = (e, type) =>{
+  handleOnChange = (e, type, index) =>{
     const currentInput = e.currentTarget;
     if(type == "brand") this.setState({brandName: currentInput.value})
     if(type == "category") this.setState({categoryName: currentInput.value})
+    if(type == "product") {
+      const currentField = e.target; 
+      const product = this.state.product;
+      if(currentField.name == "productName") product['name'] = currentField.value;
+      if(currentField.name == "subCategory") product['subCategory'] = currentField.value;
+      if(currentField.name == "brand") product['brand'] = currentField.value;
+      if(currentField.name == "parentCategory") product['parentCategory'] = currentField.value;
+      if( product['parentCategory'] && product['subCategory'] ){
+        let category = this.props.categoryReducer.categories;
+        category = category.filter(cat => cat._id === product['parentCategory']);
+        product['breadcrumb'] = category[0].name + "/" + product['subCategory']
+      }
+      if(currentField.name == "productSpecsName") product['specifications'][index] = {...product['specifications'][index], name: currentField.value}
+      if(currentField.name == "productSpecsValue") product['specifications'][index] = {...product['specifications'][index], value: currentField.value}
+      this.setState({product})
+    }
+    
   }
 
-  handleSubmit = (e, type) =>{
+  handleSubmit = async (e, type) =>{
     if(type == "brand"){
-      this.props.addNewBrand(this.state.brandName)
+      await this.props.addNewBrand(this.state.brandName);
+      this.props.getAllBrandsAction();
       this.setState({showAddBrand: false})
     }else if(type == "category"){
-      this.props.addNewCategory(this.state.categoryName)
+      await this.props.addNewCategory(this.state.categoryName);
+      this.props.getAllCategoriesAction();
       this.setState({showAddCategory: false})
       this.showMessage();
+    }
+    else if(type == "product"){
+     await this.props.addNewProduct(this.state.product)
+      this.setState({showAddProduct: false})
+      this.props.getAllProductAction();
+
     }
   }
   showMessage = () =>{
 
   }
 
+  handleAddProductSpecs = () => {
+    const newSpecObj = {
+      name: "", value: ""
+    };
+    let product = this.state.product;
+    product.specifications = [...product.specifications, newSpecObj];
+    this.setState({product})
+  }
+  handleSubItemClicked = async (e, item, submenu, onClick) =>{
+    if(item.name == "Settings") onClick();
+    else {
+      let queryStr = this.state.queryStr;
+      queryStr += `${item.name.toLowerCase()}=${submenu._id}`;
+      await this.props.getAllProductAction(queryStr)
+    }
+
+
+  }
   render() {
     return (
       <div className="App">
@@ -68,7 +124,7 @@ class App extends React.Component {
         </div>
         <div className="body-container">
           <div className="side-bar-container">
-            <Sidemenu 
+            <Sidemenu
               toggleAddProduct={this.toggleAddProduct}
               toggleAddCategory={this.toggleAddCategory}
               toggleAddBrand={this.toggleAddBrand}
@@ -76,18 +132,26 @@ class App extends React.Component {
               addCategoryShow={this.state.showAddCategory}
               addBrandShow={this.state.showAddBrand}
               brands={this.props.brandReducer.brands}
-              categories= {this.props.categoryReducer.categories}//{this.props.categoryReducer.categories}
+              categories={this.props.categoryReducer.categories}
               toggleSubmenu={this.toggleSubmenu}
               showSettingSubmenu={this.state.showSettingSubmenu}
               showCategoriesSubmenu={this.state.showCategoriesSubmenu}
-              onChange={(e, type) => this.handleOnChange(e, type)}
+              showBrandsubmenu={this.state.showBrandsubmenu}
+              onChange={(e, type, index) => this.handleOnChange(e, type, index)}
               onSubmit={(e, type)=>this.handleSubmit(e, type)}
               showMessage={this.showMessage}
+              product={this.state.product}
+              addProductSpecs={()=>this.handleAddProductSpecs()}
+              handleSubItemClicked={(type, item, submenu, onClick)=>this.handleSubItemClicked(type, item, submenu, onClick)}
               />
           </div>
-          <div className="body-content-container p-10">
-            <p>Body</p>
-          </div>
+          {/* <div className="body-content-container"> */}
+          {this.props.productReducer.products.length ? (<Products 
+              data={this.props.productReducer.products}
+              showProductDetails={this.state.showProductDetails}
+              toggleShowProduct={(e, product) => this.toggleShowProduct(e, product)}
+              currentproduct={this.state.currentSelectedProduct}/>): <p>There are no products. Go to settings to Add a new Product</p>}
+          {/* </div> */}
         </div>
       </div>
     );
@@ -97,7 +161,8 @@ class App extends React.Component {
 const mapStateToProps = state => {
   return {
     brandReducer: state.brandReducer,
-    categoryReducer: state.categoryReducer
+    categoryReducer: state.categoryReducer,
+    productReducer: state.productReducer
   }
 }
 
@@ -105,8 +170,10 @@ const mapDispatchToProps = dispatch => {
   return bindActionCreators({ 
     addNewBrand: BrandAction.addNewBrandAction,
     addNewCategory: CategoryAction.addNewCategory,
+    addNewProduct: ProductAction.addNewProduct,
     getAllBrandsAction: BrandAction.getAllBrandsAction, 
-    getAllCategoriesAction: CategoryAction.getAllCategoriesAction
+    getAllCategoriesAction: CategoryAction.getAllCategoriesAction,
+    getAllProductAction: ProductAction.getAllProducts
   },
   dispatch);
 }

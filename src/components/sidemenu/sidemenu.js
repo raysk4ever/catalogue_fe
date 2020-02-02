@@ -4,13 +4,10 @@ import "../../styles/sidemenu.css";
 
 const Sidemenu = props => {
     
-    const { toggleAddProduct, toggleAddCategory, toggleAddBrand, addProductShow, addCategoryShow, addBrandShow, brands, categories, toggleSubmenu, showSettingSubmenu, showCategoriesSubmenu, onChange, onSubmit} = props;
+    const { toggleAddProduct, toggleAddCategory, toggleAddBrand, addProductShow, addCategoryShow, addBrandShow, brands, categories, toggleSubmenu, showSettingSubmenu, showCategoriesSubmenu, showBrandsubmenu, onChange, onSubmit, product, addProductSpecs, handleSubItemClicked} = props;
     const sidemenuColumns = [
-        {name: 'Categories', show: showCategoriesSubmenu, submenu: [
-            {name: 'Cat 1', onClick: null }, 
-            {name: 'Cat 2', onClick: null }, 
-            {name: 'Cat 3', onClick: null}
-        ]},
+        {name: 'Categories', show: showCategoriesSubmenu, submenu: categories},
+        {name: 'Brands', show: showBrandsubmenu, submenu: brands},
         {name: 'Settings', show: showSettingSubmenu, submenu:[
             {name: 'Add Product', onClick: toggleAddProduct }, 
             {name: 'Add Category', onClick: toggleAddCategory }, 
@@ -22,8 +19,11 @@ const Sidemenu = props => {
             {sidemenuColumns.map(item=>(
                 item.hasOwnProperty('submenu')?(
                     <div className="single-side-item" name={item.name} onClick={toggleSubmenu} key={item.name}>
-                        <p className="p-10"><span className="hhhh">{item.name}</span></p>
-                        {item.show?item.submenu.map(submenu=><div key={submenu.name} className="submenu-single-item p-10" onClick={submenu.onClick}>{submenu.name}</div>):(null)}
+                        <p className="p-10">{item.name}</p>
+                        {item.show?item.submenu.map(submenu=><div key={submenu.name} 
+                        // onClick={submenu.onClick} 
+                        onClick={(e)=>handleSubItemClicked(e, item, submenu, submenu.onClick)}
+                        className="submenu-single-item p-10">{submenu.name}</div>):(null)}
                     </div>)
                 :(<div className="single-side-item p-10" onClick={toggleSubmenu} key={item.name}>{item.name}</div>)
             ))}
@@ -33,21 +33,29 @@ const Sidemenu = props => {
                     <Modal.Title>Add Product</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <input placeholder="Product Name" className="input-group form-control mb-2"></input>
-                    <select className="form-control mb-2">
+                    <input placeholder="Product Name" onChange={(e)=>onChange(e, 'product')} name="productName" className="input-group form-control mb-2"></input>
+                    <select className="form-control mb-2" onChange={(e)=>onChange(e, 'product')} name="brand">
                         <option disabled selected>Select Brand</option>
-                        {brands.map(item=><option value={item.name} key={item._id}>{item.name}</option>)}
+                        {brands.map(item=><option value={item._id} key={item._id}>{item.name}</option>)}
                     </select>
-                    <select className="form-control mb-2">
+                    <select className="form-control mb-2" onChange={(e)=>onChange(e, 'product')} name="parentCategory">
                         <option disabled selected>Select Category</option>
-                        {categories.map(item=><option value={item.name} key={item._id}>{item.name}</option>)}
+                        {categories.map(item=><option value={item._id} key={item._id}>{item.name}</option>)}
                     </select>
+                    <input placeholder="Product Sub Category" onChange={(e)=>onChange(e, 'product')} name="subCategory" className="input-group form-control mb-2"></input>
+                    {product.specifications.map((spec, index )=> (
+                        <div className="df" style={{display: 'flex'}} key={index}>
+                            <input placeholder="Product Specs Name" className="input-group form-control m-2" name="productSpecsName" onChange={e=>onChange(e, 'product', index)} ></input>
+                            <input placeholder="Product Specs value" className="input-group form-control m-2" name="productSpecsValue" onChange={e=>onChange(e, 'product', index)} ></input>
+                            <button className="btn btn-primary m-2" onClick={(e) => addProductSpecs(e, 'product')} >+</button>
+                        </div>
+                    ))}
                 </Modal.Body>
                     <Modal.Footer>
                     <Button variant="secondary" onClick={toggleAddProduct}>
                         Close
                     </Button>
-                    <Button variant="primary">
+                    <Button variant="primary"onClick={(e)=>onSubmit(e, 'product')} >
                         Add Product
                     </Button>
                 </Modal.Footer>
